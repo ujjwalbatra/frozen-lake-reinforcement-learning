@@ -1,3 +1,10 @@
+"""
+Assignment completed by:
+    1. Ujjwal Batra - s3673681
+    2. Elise Thioliere - s3766590
+"""
+
+
 ### MDP Value Iteration and Policy Iteration
 ### Acknowledgement: start-up codes were adapted with permission from Prof. Emma Brunskill of Stanford University
 import math
@@ -6,7 +13,7 @@ import sys
 import numpy as np
 import gym
 import time
-from lake_envs import *
+import rmit_rl_env
 
 np.set_printoptions(precision=3)
 
@@ -57,8 +64,9 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
 
     value_function = np.zeros(nS)
     old_value_function = np.zeros(nS)
+    converged = False
 
-    while True:
+    while not converged:
         # stopping condition
         max_value_diff = 0
 
@@ -82,7 +90,7 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
         old_value_function = value_function
 
         if max_value_diff <= tol:
-            break
+            converged = True
 
     return value_function
 
@@ -157,10 +165,11 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
     policy = np.zeros(nS, dtype=int)
 
     stable = False
-
+    i = 0
     while not stable:
         value_function = policy_evaluation(P, nS, nA, policy, gamma, tol)
         policy, stable = policy_improvement(P, nS, nA, value_function, policy, gamma)
+        i += 1
 
     return value_function, policy
 
@@ -186,8 +195,9 @@ def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
     value_function = np.zeros(nS)
     old_value_function = np.zeros(nS)
     policy = np.zeros(nS, dtype=int)
-
-    while True:
+    converged = False
+    i = 0
+    while not converged:
         # stopping condition
         max_value_diff = 0
 
@@ -218,9 +228,10 @@ def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
             value_function[s] = max_utility
 
         old_value_function = value_function
+        i += 1
 
         if max_value_diff <= tol:
-            break
+            converged = True
 
     return value_function, policy
 
@@ -249,7 +260,8 @@ def render_single(env, policy, max_steps=100):
         episode_reward += rew
         if done:
             break
-    env.render();
+    env.render()
+
     if not done:
         print("The agent didn't reach a terminal state in {} steps.".format(max_steps))
     else:
@@ -261,8 +273,8 @@ def render_single(env, policy, max_steps=100):
 # You may change the parameters in the functions below
 if __name__ == "__main__":
     # comment/uncomment these lines to switch between deterministic/stochastic environments
-    # env = gym.make("Deterministic-4x4-FrozenLake-v0")
-    env = gym.make("Stochastic-4x4-FrozenLake-v0")
+    env = gym.make("Deterministic-4x4-FrozenLake-v0")
+    # env = gym.make("Stochastic-4x4-FrozenLake-v0")
 
     print("\n" + "-" * 25 + "\nBeginning Policy Iteration\n" + "-" * 25)
 
@@ -271,5 +283,5 @@ if __name__ == "__main__":
 
     print("\n" + "-" * 25 + "\nBeginning Value Iteration\n" + "-" * 25)
 
-    V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, tol=1e-3)
+    V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=.9, tol=1e-3)
     render_single(env, p_vi, 100)
